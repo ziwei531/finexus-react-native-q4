@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   SafeAreaView,
@@ -17,6 +17,7 @@ import {
   View,
   Modal,
   Pressable,
+  Alert,
 } from 'react-native';
 
 import {
@@ -30,27 +31,73 @@ import {
 function App(): JSX.Element {
   const [milliseconds, setMilliseconds] = useState<number>(0);
   const [isStart, setIsStart] = useState<boolean>(false);
+  const [startModalIsVisible, setStartModalIsVisible] =
+    useState<boolean>(false);
+  const [color, setColor] = useState<string>(randomColor());
+  const [arrColors, setArrColors] = useState<string[]>([]);
+  const [highestRecord, setHighestRecord] = useState<number>(0);
 
-  const handleStartGame = () => {
-    setIsStart(true);
+  // this is where the color changing logic is
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    if (isStart) {
+      intervalId = setInterval(() => {
+        setArrColors([
+          randomColor(),
+          randomColor(),
+          randomColor(),
+          randomColor(),
+        ]);
+      }, 500);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isStart]);
+
+  const handleModalChoice = (status: string) => {
+    if (status === 'Start') {
+      setIsStart(true);
+      setStartModalIsVisible(false);
+    } else {
+      setIsStart(false);
+      setStartModalIsVisible(false);
+    }
+  };
+  const handleStartModal = () => {
+    //if it is in the start status, this disables the button.
+    if (isStart) {
+      return;
+    }
+    setColor(randomColor());
+    setStartModalIsVisible(true);
   };
 
+  // bring up the highest record modal
   const handleOpenHighestRecord = () => {
-    console.log('Open Highest Record');
+    //if it is in the start status, this disables the button.
+    if (isStart) {
+      return;
+    }
   };
 
-  const color = [
-    'lightseagreen',
-    'firebrick',
-    'lightpink',
-    'maroon',
-    'cornflowerblue',
-    'burlywood',
-    'darkslateblue',
-    'lightcoral',
-    'orange',
-    'darksalmon',
-  ];
+  // alert result
+  const alertResult = (chosenColor: string) => {
+    //for now, set it to false as temporary measure.
+    setIsStart(false);
+    if (chosenColor === color) {
+      Alert.alert(
+        'Congratulations!',
+        `You had used ${milliseconds} to click ${chosenColor} color.`,
+        [{text: 'OK'}],
+      );
+    } else {
+      Alert.alert('Sorry', `This is ${chosenColor}`, [{text: 'OK'}]);
+    }
+  };
+
   return (
     <View style={[styles.parentContainer]}>
       {/* Top Part */}
@@ -59,7 +106,7 @@ function App(): JSX.Element {
           <Text
             style={{
               color: 'white',
-              fontSize: 32,
+              fontSize: 25,
               textAlign: 'center',
               backgroundColor: 'maroon',
               padding: 32,
@@ -75,6 +122,7 @@ function App(): JSX.Element {
           style={({pressed}) => [
             {backgroundColor: 'lightpink', padding: 32},
             pressed && styles.pressedItem,
+            isStart && styles.gameStartedStyle,
           ]}
           android_ripple={{color: '#dddddd'}}>
           <Text
@@ -82,7 +130,7 @@ function App(): JSX.Element {
               color: 'black',
               fontStyle: 'italic',
               fontWeight: 'bold',
-              fontSize: 32,
+              fontSize: 25,
               textAlign: 'center',
             }}>
             Highest Record
@@ -90,33 +138,94 @@ function App(): JSX.Element {
         </Pressable>
       </View>
 
+      {/* Start Game Modal */}
+      <Modal
+        transparent={true}
+        visible={startModalIsVisible}
+        animationType="slide">
+        <View style={[styles.modalContainer]}>
+          <View style={styles.modalView}>
+            <View style={{paddingBottom: 10}}>
+              <Text style={{fontSize: 24, color: 'black'}}>Start Playing!</Text>
+            </View>
+            <View style={{}}>
+              <Text style={{fontSize: 21, color: 'black'}}>
+                Tap the{'    '}
+                <View style={{backgroundColor: color, padding: 8}}>
+                  <Text style={{fontSize: 21, color: 'white'}}>{color}</Text>
+                </View>
+                {'    '}
+                color.
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                alignContent: 'flex-end',
+                padding: 10,
+              }}>
+              <Pressable onPress={() => handleModalChoice('Cancel')}>
+                <Text
+                  style={{
+                    fontSize: 21,
+                    marginRight: 35,
+                    color: 'black',
+                    fontWeight: 'bold',
+                  }}>
+                  Cancel
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => handleModalChoice('Start')}>
+                <Text
+                  style={{fontSize: 21, color: 'black', fontWeight: 'bold'}}>
+                  Start
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Middle Part */}
       {isStart && (
         <View style={styles.colorContainer}>
-          <View
-            style={{
-              backgroundColor: randomColor(),
-              height: 150,
-              width: 150,
-            }}></View>
-          <View
-            style={{
-              backgroundColor: randomColor(),
-              height: 150,
-              width: 150,
-            }}></View>
-          <View
-            style={{
-              backgroundColor: randomColor(),
-              height: 150,
-              width: 150,
-            }}></View>
-          <View
-            style={{
-              backgroundColor: randomColor(),
-              height: 150,
-              width: 150,
-            }}></View>
+          <Pressable onPress={() => alertResult(arrColors[0])}>
+            <View
+              style={{
+                backgroundColor: arrColors[0],
+                height: 150,
+                width: 150,
+              }}
+            />
+          </Pressable>
+          <Pressable onPress={() => alertResult(arrColors[1])}>
+            <View
+              style={{
+                backgroundColor: arrColors[1],
+                height: 150,
+                width: 150,
+              }}
+            />
+          </Pressable>
+          <Pressable onPress={() => alertResult(arrColors[2])}>
+            <View
+              style={{
+                backgroundColor: arrColors[2],
+                height: 150,
+                width: 150,
+              }}
+            />
+          </Pressable>
+          <Pressable onPress={() => alertResult(arrColors[3])}>
+            <View
+              style={{
+                backgroundColor: arrColors[3],
+                height: 150,
+                width: 150,
+              }}
+            />
+          </Pressable>
         </View>
       )}
 
@@ -125,9 +234,10 @@ function App(): JSX.Element {
         style={({pressed}) => [
           pressed && styles.pressedItem,
           styles.startButton,
+          isStart && styles.gameStartedStyle,
         ]}
         android_ripple={{color: '#dddddd'}}
-        onPress={handleStartGame}>
+        onPress={handleStartModal}>
         <Text
           style={{
             color: 'black',
@@ -211,6 +321,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 130,
+  },
+
+  modalContainer: {
+    flexDirection: 'column',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  modalView: {
+    margin: 40,
+    borderRadius: 35,
+    padding: 25,
+    borderWidth: 1,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 10,
+    backgroundColor: '#fff',
+  },
+  gameStartedStyle: {
+    backgroundColor: 'grey',
   },
 });
 
