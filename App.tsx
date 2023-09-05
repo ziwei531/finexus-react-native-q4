@@ -6,14 +6,9 @@
  */
 
 import React, {useState, useEffect} from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
   Modal,
   Pressable,
@@ -21,14 +16,6 @@ import {
   PixelRatio,
   FlatList,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
 function App(): JSX.Element {
   const colors = [
@@ -62,14 +49,11 @@ function App(): JSX.Element {
 
   const [arrColors, setArrColors] = useState<string[]>([]);
 
-  //when one of the records were pressed in the highest record modal, this keeps track of the record that was pressed.
-
   // when the user is playing the game, this keeps track of their record.
   const [record, setRecord] = useState<number>(0);
 
   // dummy data will be used for testing purposes.
   const DUMMY_DATA = [];
-
   for (let i = 0; i < 20; i++) {
     DUMMY_DATA.push({key: i + 1, record: Math.floor(Math.random() * 1000)});
   }
@@ -102,24 +86,31 @@ function App(): JSX.Element {
       'darksalmon',
     ];
 
+    function shuffleArray<T>(array: T[]): T[] {
+      const shuffledArray = [...array];
+      for (let i = shuffledArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArray[i], shuffledArray[j]] = [
+          shuffledArray[j],
+          shuffledArray[i],
+        ];
+      }
+      return shuffledArray;
+    }
+
     if (colors.includes(requiredColor)) {
       const filteredColors = colors.filter(color => color !== requiredColor);
 
       const randomizeColor = randomColor(filteredColors);
 
-      setArrColors([
-        requiredColor,
-        randomizeColor.randomItem(),
-        randomizeColor.randomItem(),
-        randomizeColor.randomItem(),
-      ]);
-    }
-  };
-
-  const shuffleArray = (array: string[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+      setArrColors(
+        shuffleArray([
+          requiredColor,
+          randomizeColor.randomItem(),
+          randomizeColor.randomItem(),
+          randomizeColor.randomItem(),
+        ]),
+      );
     }
   };
 
@@ -134,8 +125,6 @@ function App(): JSX.Element {
   useEffect(() => {
     let intervalColors: NodeJS.Timeout;
     let intervalTimer: NodeJS.Timeout;
-
-    console.log(arrColors);
 
     if (isStart) {
       intervalColors = setInterval(() => {
