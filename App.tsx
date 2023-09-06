@@ -112,8 +112,6 @@ function App(): JSX.Element {
     return false;
   };
 
-  // timer and color blocks constantly changing logic
-
   // this is to ensure the required color is not always in the same position in every new shuffle.
   const shuffleTheColors = (array: string[], index: number) => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -122,6 +120,7 @@ function App(): JSX.Element {
     }
   };
 
+  // timer and color blocks constantly changing logic
   useEffect(() => {
     let intervalColors: NodeJS.Timeout;
     let intervalTimer: NodeJS.Timeout;
