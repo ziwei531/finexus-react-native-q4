@@ -60,13 +60,12 @@ function App(): JSX.Element {
     Array<{key: number; record: number}>
   >([]);
 
-  const fourBlockColors = (requiredColor: string) => {
+  const fourBlockColors = () => {
     /*
-    Ensure that this function is executed when start modal is executed so that the requiredColor can be generated. 
 
-    when the game is initialized, the 4 blocks of color should have been given based on randomColor()'s given result and be remained as such throughout the game. 
-    the requiredColor must be within one of the 4 blocks of color. 
-    the requiredColor must alternate between the 4 blocks of color. 
+    Ensure that this function is executed when start modal is executed so that the 4 blocks of color will be given. 
+    when the game is initialized, the 4 blocks of color should have been given based on randomizedColor()'s "randomItem" generated colors and 
+    be remained as such throughout the game. 
 
     */
 
@@ -95,20 +94,6 @@ function App(): JSX.Element {
       return shuffledArray;
     }
 
-    // if (colors.includes(requiredColor)) {
-    //   const filteredColors = colors.filter(color => color !== requiredColor);
-
-    //   const randomizeColor = randomColor(filteredColors);
-
-    //   setArrColors(
-    //     shuffleArray([
-    //       requiredColor,
-    //       randomizeColor.randomItem(),
-    //       randomizeColor.randomItem(),
-    //       randomizeColor.randomItem(),
-    //     ]),
-    //   );
-    // }
     const randomizeColor = randomColor(colors);
     setArrColors(
       shuffleArray([
@@ -120,14 +105,6 @@ function App(): JSX.Element {
     );
   };
 
-  // this is to ensure the required color is not always in the same position in every new game.
-  const shuffleTheColors = (array: string[], index: number) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[index], array[j]] = [array[j], array[index]];
-    }
-  };
-
   const checkRequiredColor = (array: string[], requiredColor: string) => {
     if (array.includes(requiredColor)) {
       return true;
@@ -136,17 +113,25 @@ function App(): JSX.Element {
   };
 
   // timer and color blocks constantly changing logic
+
+  // this is to ensure the required color is not always in the same position in every new shuffle.
+  const shuffleTheColors = (array: string[], index: number) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[index], array[j]] = [array[j], array[index]];
+    }
+  };
+
   useEffect(() => {
     let intervalColors: NodeJS.Timeout;
     let intervalTimer: NodeJS.Timeout;
     let intervalShuffleAgain: NodeJS.Timeout;
 
     // check if requiredColor has appeared. if yes, only then start intervalTimer
-
     if (isStart) {
       if (!checkRequiredColor(arrColors, requiredColor)) {
         intervalShuffleAgain = setInterval(() => {
-          fourBlockColors(requiredColor);
+          fourBlockColors();
         }, 400);
       } else {
         intervalColors = setInterval(() => {
@@ -154,7 +139,6 @@ function App(): JSX.Element {
         }, 400);
 
         intervalTimer = setInterval(() => {
-          console.log(milliseconds);
           setMilliseconds(currentTime => currentTime + 1);
         }, 15);
       }
@@ -170,7 +154,7 @@ function App(): JSX.Element {
   // this is triggered to check what the user has chosen between starting the game or cancelling it.
   const handleModalChoice = (status: string) => {
     if (status === 'Start') {
-      fourBlockColors(requiredColor);
+      fourBlockColors();
       setIsStart(true);
       setStartModalIsVisible(false);
     } else {
@@ -215,6 +199,7 @@ function App(): JSX.Element {
 
   // alert result. this is triggered when the user clicks on one of the color blocks. will also stop the game.
   const alertResult = (chosenColor: string) => {
+    setMilliseconds(0);
     setIsStart(false);
 
     if (chosenColor === requiredColor) {
