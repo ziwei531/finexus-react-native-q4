@@ -114,6 +114,7 @@ function App(): JSX.Element {
     }
   };
 
+  // this is to ensure the required color is not always in the same position in every new game.
   const shuffleTheColors = (array: string[], index: number) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -133,7 +134,7 @@ function App(): JSX.Element {
 
       intervalTimer = setInterval(() => {
         setMilliseconds(currentTime => currentTime + 1);
-      }, 100);
+      }, 35);
     }
 
     return () => {
