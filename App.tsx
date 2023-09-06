@@ -49,9 +49,6 @@ function App(): JSX.Element {
 
   const [arrColors, setArrColors] = useState<string[]>([]);
 
-  // when the user is playing the game, this keeps track of their record.
-  const [record, setRecord] = useState<number>(0);
-
   // dummy data will be used for testing purposes.
   const DUMMY_DATA = [];
   for (let i = 0; i < 20; i++) {
@@ -98,20 +95,29 @@ function App(): JSX.Element {
       return shuffledArray;
     }
 
-    if (colors.includes(requiredColor)) {
-      const filteredColors = colors.filter(color => color !== requiredColor);
+    // if (colors.includes(requiredColor)) {
+    //   const filteredColors = colors.filter(color => color !== requiredColor);
 
-      const randomizeColor = randomColor(filteredColors);
+    //   const randomizeColor = randomColor(filteredColors);
 
-      setArrColors(
-        shuffleArray([
-          requiredColor,
-          randomizeColor.randomItem(),
-          randomizeColor.randomItem(),
-          randomizeColor.randomItem(),
-        ]),
-      );
-    }
+    //   setArrColors(
+    //     shuffleArray([
+    //       requiredColor,
+    //       randomizeColor.randomItem(),
+    //       randomizeColor.randomItem(),
+    //       randomizeColor.randomItem(),
+    //     ]),
+    //   );
+    // }
+    const randomizeColor = randomColor(colors);
+    setArrColors(
+      shuffleArray([
+        randomizeColor.randomItem(),
+        randomizeColor.randomItem(),
+        randomizeColor.randomItem(),
+        randomizeColor.randomItem(),
+      ]),
+    );
   };
 
   // this is to ensure the required color is not always in the same position in every new game.
@@ -122,26 +128,44 @@ function App(): JSX.Element {
     }
   };
 
+  const checkRequiredColor = (array: string[], requiredColor: string) => {
+    if (array.includes(requiredColor)) {
+      return true;
+    }
+    return false;
+  };
+
   // timer and color blocks constantly changing logic
   useEffect(() => {
     let intervalColors: NodeJS.Timeout;
     let intervalTimer: NodeJS.Timeout;
+    let intervalShuffleAgain: NodeJS.Timeout;
+
+    // check if requiredColor has appeared. if yes, only then start intervalTimer
 
     if (isStart) {
-      intervalColors = setInterval(() => {
-        shuffleTheColors(arrColors, arrColors.indexOf(requiredColor));
-      }, 400);
+      if (!checkRequiredColor(arrColors, requiredColor)) {
+        intervalShuffleAgain = setInterval(() => {
+          fourBlockColors(requiredColor);
+        }, 400);
+      } else {
+        intervalColors = setInterval(() => {
+          shuffleTheColors(arrColors, arrColors.indexOf(requiredColor));
+        }, 400);
 
-      intervalTimer = setInterval(() => {
-        setMilliseconds(currentTime => currentTime + 1);
-      }, 35);
+        intervalTimer = setInterval(() => {
+          console.log(milliseconds);
+          setMilliseconds(currentTime => currentTime + 1);
+        }, 15);
+      }
     }
 
     return () => {
       clearInterval(intervalColors);
       clearTimeout(intervalTimer);
+      clearTimeout(intervalShuffleAgain);
     };
-  }, [isStart]);
+  }, [isStart, arrColors]);
 
   // this is triggered to check what the user has chosen between starting the game or cancelling it.
   const handleModalChoice = (status: string) => {
